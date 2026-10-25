@@ -1,0 +1,12 @@
+{
+  "name": "yt-reference-search",
+  "version": "0.1.0",
+  "description": "Find YouTube reference videos across production techniques, and watch any YouTube video in seconds without downloading it.",
+  "author": {
+    "name": "dljake"
+  },
+  "homepage": "https://github.com/dljake/yt-reference-search",
+  "repository": "https://github.com/dljake/yt-reference-search",
+  "license": "MIT",
+  "keywords": ["youtube", "video", "reference", "promo", "moodboard", "transcript", "yt-dlp", "ffmpeg", "token-efficient"]
+}

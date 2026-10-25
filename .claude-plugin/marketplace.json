@@ -1,0 +1,14 @@
+{
+  "name": "yt-reference-search",
+  "owner": {
+    "name": "dljake"
+  },
+  "plugins": [
+    {
+      "name": "yt-reference-search",
+      "source": "./plugins/yt-reference-search",
+      "description": "Find YouTube reference videos across production techniques, and watch any YouTube video in seconds without downloading it.",
+      "version": "0.1.0"
+    }
+  ]
+}
