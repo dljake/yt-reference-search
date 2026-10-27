@@ -118,6 +118,22 @@ Output goes to `yt-watch/<video-id>/`: `transcript.txt`, `grid_01.jpg`, …
 - Only publicly available captions and preview thumbnails are fetched. Respect YouTube's Terms of Service and creators' rights; use outputs for personal review and research.
 - Batches are spaced out to avoid HTTP 429 rate limits.
 
+## Changelog
+
+**0.1.1** (2026-10-27)
+- Re-running a video in another mode shows only the new grids.
+- If grids can't be built, the transcript is still returned and temporary files are cleaned up.
+- Videos with uploaded captions but no language tag now get a transcript.
+- Storyboard parsing no longer depends on header order.
+- Rate-limit detection is more precise, and options missing a value say so.
+- Cleanup removes only the `yt-watch/<video-id>/` folders a run created.
+
+**0.1.0** (2026-10-25): first release.
+
+**변경 내역 (한국어)**
+- **0.1.1** (2026-10-27): 같은 영상을 다른 모드로 다시 돌려도 새 그리드만 나옵니다. 그리드를 못 만들어도 자막은 그대로 받고 임시 파일도 정리합니다. 언어 정보 없이 직접 올린 자막만 있는 영상도 자막을 가져옵니다. 썸네일 파일 읽기가 헤더 순서에 영향받지 않고, 속도 제한 감지가 더 정확해졌으며, 값이 빠진 옵션은 바로 알려 줍니다. 정리할 때는 이번에 만든 `yt-watch/<영상ID>/` 폴더만 지웁니다.
+- **0.1.0** (2026-10-25): 첫 공개.
+
 ## License
 
 MIT
