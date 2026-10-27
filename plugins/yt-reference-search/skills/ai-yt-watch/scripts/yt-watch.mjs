@@ -4,7 +4,7 @@
 //
 // Usage:
 //   node yt-watch.mjs <url-or-id> [more...] [--mode text|quick|full] [--frames N]
-//                     [--lang ko,en] [--out DIR] [--keep]
+//                     [--lang ko,en] [--no-subs] [--out DIR] [--keep]
 //
 // Modes:
 //   text   transcript + title only. Fastest, cheapest. Needs yt-dlp.
@@ -34,12 +34,17 @@ const opts = { out: 'yt-watch', mode: 'quick', frames: null, lang: null, subs: t
 const inputs = [];
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
+  const val = () => {
+    const v = argv[++i];
+    if (v === undefined || v.startsWith('--')) { console.error(`${a} needs a value.\n\n${HELP}`); process.exit(1); }
+    return v;
+  };
   if (a === '-h' || a === '--help') { console.log(HELP); process.exit(0); }
-  else if (a === '--mode') opts.mode = argv[++i];
-  else if (a === '--frames') opts.frames = Math.max(1, parseInt(argv[++i], 10) || 30);
-  else if (a === '--lang') opts.lang = argv[++i];
+  else if (a === '--mode') opts.mode = val();
+  else if (a === '--frames') opts.frames = Math.max(1, parseInt(val(), 10) || 30);
+  else if (a === '--lang') opts.lang = val();
   else if (a === '--no-subs') opts.subs = false;
-  else if (a === '--out') opts.out = argv[++i];
+  else if (a === '--out') opts.out = val();
   else if (a === '--keep') opts.keep = true;
   else inputs.push(a);
 }
@@ -92,7 +97,8 @@ function extractSheets(mhtmlPath, outDir) {
   const files = [];
   let m;
   while ((m = re.exec(text))) {
-    const hdrStart = text.lastIndexOf('\n', m.index) + 1;
+    // Read the part's headers from its boundary line, so their order doesn't matter.
+    const hdrStart = text.lastIndexOf('\n--', m.index) + 1;
     const hdrEnd = text.indexOf('\r\n\r\n', m.index);
     if (hdrEnd < 0) break;
     const head = text.slice(hdrStart, hdrEnd);
@@ -189,6 +195,8 @@ function makeGrids(info, infoPath, dir, cleanup) {
     ffIn.push('-framerate', '1', '-i', tail);
     chain += `[a];[1:v]format=yuv444p,pad=${sw}:${sh}:0:0:black[b];[a][b]concat=n=2:v=1`;
   }
+  // Grids from an earlier run of this video (e.g. full, then quick) would be listed too.
+  for (const f of fs.readdirSync(dir)) if (/^grid_\d+\.jpg$/.test(f)) fs.rmSync(path.join(dir, f));
   run('ffmpeg', ['-v', 'error', '-y', ...ffIn,
     '-filter_complex', [
       chain,
@@ -249,29 +257,39 @@ function processVideo(input) {
   }
   const info = JSON.parse(fs.readFileSync(infoPath, 'utf8'));
   const cleanup = [infoPath];
-  let rateLimited = /429/.test(r.stderr || '');
+  const is429 = (s) => /HTTP Error 429|Too Many Requests/i.test(s || '');
+  let rateLimited = is429(r.stderr);
   // Dubbed videos have several "-orig" tracks; prefer the one in the video's own language.
   let langs = opts.lang || (info.language
     && [`${info.language}-orig`, `${info.language.split('-')[0]}-orig`].join(','));
 
   // Videos with only uploaded captions have no "-orig" track; ask once more by language.
+  // Without a known video language, take the first uploaded caption track instead.
   if (opts.subs && !opts.lang && !fs.readdirSync(dir).some((f) => f.endsWith('.vtt'))) {
     if (rateLimited) sleep(20000);
-    langs = [...new Set([info.language, 'en'].filter(Boolean))].join(',');
+    const uploaded = Object.keys(info.subtitles || {}).find((k) => k !== 'live_chat');
+    langs = [...new Set([info.language || uploaded, 'en'].filter(Boolean))].join(',');
     const r2 = run('yt-dlp', ['--no-warnings', '--load-info-json', infoPath, '--skip-download',
       ...subFlags(langs), '-o', path.join(dir, 'v')], { allowFail: true });
-    rateLimited = /429/.test(r2.stderr || '');
+    rateLimited = is429(r2.stderr);
   }
 
   const out = [`== ${info.title}`,
     `${info.channel || info.uploader || '?'} | ${fmtTime(info.duration || 0)} | ${info.upload_date || '?'} | ${info.webpage_url || url}`];
-  if (opts.mode !== 'text') {
-    const g = makeGrids(info, infoPath, dir, cleanup);
-    out.push(`grids: ${g.note}`, ...g.lines);
+  try {
+    if (opts.mode !== 'text') {
+      // A grid failure shouldn't throw away the transcript.
+      try {
+        const g = makeGrids(info, infoPath, dir, cleanup);
+        out.push(`grids: ${g.note}`, ...g.lines);
+      } catch (e) {
+        out.push(`grids: failed (${e.message.split('\n')[0]})`);
+      }
+    }
+    if (opts.subs) out.push(pickTranscript(dir, rateLimited, langs));
+  } finally {
+    if (!opts.keep) for (const f of cleanup) fs.rmSync(f, { force: true });
   }
-  if (opts.subs) out.push(pickTranscript(dir, rateLimited, langs));
-
-  if (!opts.keep) for (const f of cleanup) fs.rmSync(f, { force: true });
   console.log(out.join('\n') + '\n');
 }
 

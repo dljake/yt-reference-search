@@ -45,7 +45,7 @@ Non-YouTube candidates are judged from title and description at this stage.
 Table: rank | title + link | length | technique | element to borrow.
 When two videos offer the same element in the same technique, keep the stronger one. List dropped candidates with a one-line reason each.
 End with one line: if any pick needs sound and motion analysis (music, cut length, camera moves, transitions), the user can name it.
-Delete the `yt-watch/` scratch folder.
+Delete the `yt-watch/<video-id>/` folders this run created, then `yt-watch/` itself only if it is now empty.
 
 ## 4. Only on request: sound and motion
 Sound and motion need a video-understanding tool that hears audio and sees movement. If none is installed, say so and stop at step 3.

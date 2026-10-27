@@ -111,7 +111,7 @@ Output goes to `yt-watch/<video-id>/`: `transcript.txt`, `grid_01.jpg`, …
 
 내용, 구성, 분위기 파악에 강합니다. 음악과 카메라 무빙까지 보려면 영상 분석 도구와 함께 쓰세요.
 
-**설치:** 위 `brew install` 명령으로 도구를 설치한 뒤, Claude Code에서 `/plugin marketplace add dljake/yt-reference-search`와 `/plugin install yt-reference-search@yt-reference-search`를 차례로 실행합니다.
+**설치:** 위 `brew install`(macOS) 또는 `winget install`(Windows) 명령으로 도구를 설치한 뒤, Claude Code에서 `/plugin marketplace add dljake/yt-reference-search`와 `/plugin install yt-reference-search@yt-reference-search`를 차례로 실행합니다.
 
 ## Notes
 

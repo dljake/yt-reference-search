@@ -1,13 +1,13 @@
 ---
 name: ai-yt-watch
-description: Watch any YouTube video in seconds without downloading it, up to 2x faster, 99% less data and 90% fewer tokens than download-and-extract tools, and 20 videos screened in under 4 minutes. Reads the transcript and YouTube's own preview frames as one grid image. Use whenever the user shares YouTube links to watch, summarize, compare, quote or describe, e.g. "watch this video", "compare these three videos", "what does he say at the end". Not for saving videos. / 유튜브 영상을 내려받지 않고 몇 초 만에 봅니다. 다운로드 방식보다 최대 2배 빠르고, 데이터 99%, 토큰 90%를 아끼며, 영상 20개를 4분 안에 훑습니다. 유튜브 링크를 주며 "이 영상 봐줘", "영상 내용 요약해줘", "이 유튜브 어떤 분위기야", "세 영상 비교해줘"라고 할 때 씁니다. 영상 저장용은 아닙니다.
+description: Watch any YouTube video in seconds without downloading it, up to 2x faster, 99% less data and 92% fewer image tokens than download-and-extract tools, and 20 videos screened in under 4 minutes. Reads the transcript and YouTube's own preview frames as one grid image. Use whenever the user shares YouTube links to watch, summarize, compare, quote or describe, e.g. "watch this video", "compare these three videos", "what does he say at the end". Not for saving videos. / 유튜브 영상을 내려받지 않고 몇 초 만에 봅니다. 다운로드 방식보다 최대 2배 빠르고, 데이터 99%, 이미지 토큰 92%를 아끼며, 영상 20개를 4분 안에 훑습니다. 유튜브 링크를 주며 "이 영상 봐줘", "영상 내용 요약해줘", "이 유튜브 어떤 분위기야", "세 영상 비교해줘"라고 할 때 씁니다. 영상 저장용은 아닙니다.
 ---
 
 # ai-yt-watch
 
 Lets you "watch" a YouTube video for a few thousand tokens instead of downloading it. The script fetches only:
 - **the transcript** (captions in the spoken language, as plain text with `[m:ss]` markers), and
-- **grid images** built from the low-res thumbnails YouTube already makes for its seek-bar preview (one every ~2s), 30 frames per image.
+- **grid images** built from the low-res thumbnails YouTube already makes for its seek-bar preview (one every ~2s on short videos, up to ~10s on long ones), 30 frames per image.
 
 ## Pick the cheapest mode that answers the question
 
@@ -47,4 +47,4 @@ Needs `yt-dlp` (all modes), `ffmpeg` + `ffprobe` (`quick`/`full`) and Node 18+. 
 - **"transcript: none available"**: the video has no captions. Use `quick`/`full` visuals and the title/description.
 - **Rate-limited (HTTP 429)**: YouTube throttles caption requests in big batches. Wait a few minutes and rerun only the affected videos.
 - **"Sign in to confirm", signature or JS errors**: usually an outdated yt-dlp or missing JS runtime. Suggest `brew upgrade yt-dlp` (or `yt-dlp -U`) and installing `deno`.
-- The `yt-watch/` folder is scratch output. Delete it when done unless the user wants to keep it.
+- `yt-watch/<video-id>/` folders are scratch output. When done, delete the ones this run created (unless the user wants to keep them), then `yt-watch/` itself only if it is now empty. Never delete the whole `yt-watch/` folder: it may hold the user's own files.
